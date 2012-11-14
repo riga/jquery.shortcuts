@@ -1,6 +1,6 @@
 /*
  * A simple Hotkeys mechanism based on jQuery.Callbacks and
- * the jQuery Hotkeys plugin by John Resig,
+ * the jquery.hotkeys plugin by John Resig,
  * http://archive.plugins.jquery.com/project/hotkeys.
  */
 
