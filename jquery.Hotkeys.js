@@ -1,7 +1,15 @@
-/*
- * A simple Hotkeys mechanism based on jQuery.Callbacks and
- * the jquery.hotkeys plugin by John Resig,
- * http://archive.plugins.jquery.com/project/hotkeys.
+/*!
+ * jQuery Hotkeys Plugin v0.1
+ * https://github.com/riga/jquery.Hotkeys
+ *
+ * Copyright 2012, Marcel Rieger
+ * Dual licensed under the MIT or GPL Version 3 licenses.
+ * http://www.opensource.org/licenses/mit-license
+ * http://www.opensource.org/licenses/GPL-3.0
+ *
+ * Dependencies:
+ *		jQuery Hotkeys Plugin by John Resig:
+ * 		https://github.com/jeresig/jquery.hotkeys
  */
 
 // object cache
