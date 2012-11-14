@@ -1,6 +1,6 @@
 /*!
- * jQuery Hotkeys Plugin v0.1
- * https://github.com/riga/jquery.Hotkeys
+ * jQuery Shortcuts Plugin v0.1
+ * https://github.com/riga/jquery.shortcuts
  *
  * Copyright 2012, Marcel Rieger
  * Dual licensed under the MIT or GPL Version 3 licenses.
@@ -13,12 +13,11 @@
  */
 
 // object cache
-var _hotkeys = {};
+var _shortcuts = {};
 
-jQuery.Hotkeys = function( /*String|Integer*/ id ) {
-	// instantiated on every call
+jQuery.Shortcuts = function( /*String|Integer*/ id ) {
 	
-	var self = id && _hotkeys[ id ];
+	var self = id && _shortcuts[ id ];
 	
 	if ( !self ) {
 		// callback storage for the given id
@@ -90,7 +89,7 @@ jQuery.Hotkeys = function( /*String|Integer*/ id ) {
 		};
 		
 		if ( id ) {
-			_hotkeys[ id ] = self;
+			_shortcuts[ id ] = self;
 		}
 	}
 	

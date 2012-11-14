@@ -1,4 +1,4 @@
-jquery.Hotkeys
+jquery.shortcuts
 ==============
 
 Todo
