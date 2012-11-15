@@ -8,8 +8,8 @@
  * http://www.opensource.org/licenses/GPL-3.0
  *
  * Dependencies:
- *		jQuery Hotkeys Plugin by John Resig:
- * 		https://github.com/jeresig/jquery.hotkeys
+ *     jQuery Hotkeys Plugin by John Resig:
+ *     https://github.com/jeresig/jquery.hotkeys
  */
 
 // object cache
