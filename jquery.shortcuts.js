@@ -66,7 +66,7 @@ jQuery.Shortcuts = function( /*String|Integer*/ id ) {
 			var args = jQuery.makeArray( arguments );
 			jQuery.each( _callbacks, function( key, callback ) {
 				if ( args.length === 0 || jQuery.inArray( key, args ) > -1 ) {
-					// use name sapces to use callbacks more than once
+					// use namespaces to use callbacks more than once
 					jQuery(document).unbind( 'keydown.' + key.replace( /\+/g, '' ), callback.fire );
 				}
 			});
