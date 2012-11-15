@@ -17,7 +17,7 @@ Do Something:
 ```javascript
 $.Shortcuts( id )
 ```
->> Returns an either new or existent `Topic` object depending on `id`.
+>> Returns an either new or existent `Shortcuts` object depending on `id`.
 - `id (String|Integer)`: The name of the target set of shortcuts. If omitted, a one-way
 set is created that you have care for on your own.
 
