@@ -27,7 +27,7 @@ jQuery.Shortcuts = function( /*String|Integer*/ id ) {
 		add = function( /*String*/ key ) {
 			var args = jQuery.makeArray( arguments );
 			args.shift();
-			_callbacks[ key ] = ( _callbacks[key] || jQuery.Callbacks() ).add( args );
+			_callbacks[ key ] = (_callbacks[key] || jQuery.Callbacks()).add( args );
 			return this;
 		},
 		
@@ -38,7 +38,7 @@ jQuery.Shortcuts = function( /*String|Integer*/ id ) {
 			}
 			var args = jQuery.makeArray( arguments );
 			args.shift();
-			if ( args.length === 0 ) {
+			if ( !args.length ) {
 				_callbacks[ key ].empty();
 			} else {
 				_callbacks[ key ].remove( args );
