@@ -71,21 +71,13 @@ jQuery.Shortcuts = function( /*String|Integer*/ id ) {
 				}
 			});
 			return this;
-		},
-		
-		// _callbacks getter with 'key' filter
-		callbacks = function( /*String*/ key ) {
-			return key ? _callbacks[ key ] : _callbacks;
 		};
 		
 		self = {
-			// functions
 			add: add,
 			remove: remove,
 			enable: enable,
 			disable: disable,
-			// getter
-			callbacks: callbacks
 		};
 		
 		if ( id ) {
