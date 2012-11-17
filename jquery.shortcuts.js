@@ -77,7 +77,7 @@ jQuery.Shortcuts = function( id ) {
 			add: add,
 			remove: remove,
 			enable: enable,
-			disable: disable,
+			disable: disable
 		};
 		
 		if ( id ) {
