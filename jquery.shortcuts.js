@@ -15,7 +15,7 @@
 // object cache
 var _shortcuts = {};
 
-jQuery.Shortcuts = function( /*String|Integer*/ id ) {
+jQuery.Shortcuts = function( id ) {
 	
 	var self = id && _shortcuts[ id ];
 	
@@ -24,7 +24,7 @@ jQuery.Shortcuts = function( /*String|Integer*/ id ) {
 		var _callbacks = {},
 		
 		// add function, that processes arbitrary callbacks from the arguments
-		add = function( /*String*/ key ) {
+		add = function( key ) {
 			var args = jQuery.makeArray( arguments );
 			args.shift();
 			_callbacks[ key ] = (_callbacks[key] || jQuery.Callbacks()).add( args );
@@ -32,7 +32,7 @@ jQuery.Shortcuts = function( /*String|Integer*/ id ) {
 		},
 		
 		// remove function, that processes arbitrary callbacks from the arguments
-		remove = function( /*String*/ key ) {
+		remove = function( key ) {
 			if ( !_callbacks[ key ] ) {
 				return;
 			}
