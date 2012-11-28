@@ -16,13 +16,13 @@
 var _shortcuts = {};
 
 jQuery.Shortcuts = function( id ) {
-	
+
 	var self = id && _shortcuts[ id ];
-	
+
 	if ( !self ) {
 		// callback storage for the given id
 		var _callbacks = {},
-		
+
 		// add function, that processes arbitrary callbacks from the arguments
 		add = function( key ) {
 			var args = jQuery.makeArray( arguments );
@@ -30,7 +30,7 @@ jQuery.Shortcuts = function( id ) {
 			_callbacks[ key ] = (_callbacks[key] || jQuery.Callbacks()).add( args );
 			return this;
 		},
-		
+
 		// remove function, that processes arbitrary callbacks from the arguments
 		remove = function( key ) {
 			if ( !_callbacks[ key ] ) {
@@ -45,7 +45,7 @@ jQuery.Shortcuts = function( id ) {
 			}
 			return this;
 		},
-		
+
 		// enable function
 		// keys can be passed in the arguments
 		enable = function() {
@@ -59,7 +59,7 @@ jQuery.Shortcuts = function( id ) {
 			});
 			return this;
 		},
-		
+
 		// disable function
 		// keys can be passed in the arguments
 		disable = function() {
@@ -72,18 +72,18 @@ jQuery.Shortcuts = function( id ) {
 			});
 			return this;
 		};
-		
+
 		self = {
 			add: add,
 			remove: remove,
 			enable: enable,
 			disable: disable
 		};
-		
+
 		if ( id ) {
 			_shortcuts[ id ] = self;
 		}
 	}
-	
+
 	return self;
 };
