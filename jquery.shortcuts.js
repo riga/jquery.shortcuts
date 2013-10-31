@@ -53,13 +53,17 @@ jQuery.Shortcuts = function(id) {
 
         // enable function
         // keys can be passed in the arguments
-        enable = function() {
+        enable = function(node) {
+            node = node || document;
             var args = jQuery.makeArray(arguments);
             this.disable.apply(this, args);
             jQuery.each(_callbacks, function(key, callback) {
                 if(args.length === 0 || jQuery.inArray(key, args) > -1) {
                     // use name spaces to use callbacks more than once
-                    jQuery(document).bind('keydown.' + key.replace(/\+/g, ''), key, callback.fire);
+                    jQuery(node).bind('keydown.' + key.replace(/\+/g, ''), key, function(event) {
+                        event.preventDefault();
+                        callback.fire();
+                    });
                 }
             });
             return self;
