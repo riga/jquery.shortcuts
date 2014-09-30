@@ -1,8 +1,8 @@
 /*!
- * jQuery Shortcuts Plugin v0.1
+ * jQuery Shortcuts Plugin v1.0.0
  * https://github.com/riga/jquery.shortcuts
  *
- * Copyright 2012, Marcel Rieger
+ * Copyright 2014, Marcel Rieger
  * Dual licensed under the MIT or GPL Version 3 licenses.
  * http://www.opensource.org/licenses/mit-license
  * http://www.opensource.org/licenses/GPL-3.0
@@ -12,88 +12,247 @@
  *     https://github.com/jeresig/jquery.hotkeys
  */
 
-// object cache
-var _shortcuts = {};
+(function($) {
 
-jQuery.Shortcuts = function(id) {
+  var GLOBAL_NAMESPACE, DELIMITER, DEFAULT_TARGET,
+      globalShortcuts,
+      checkGlobalNS, getParentId, getShortcuts,
+      Shortcuts;
 
-    var self = id && _shortcuts[id];
 
-    if(!self) {
-        // callback storage for the given id
-        var _callbacks = {},
+  // some constants
+  GLOBAL_NAMESPACE = "global";
+  DELIMITER        = ".";
+  DEFAULT_TARGET   = document;
 
-        // add function, that processes arbitrary callbacks from the arguments
-        add = function(key) {
-            var args = jQuery.makeArray(arguments);
-            args.shift();
-            _callbacks[key] = (_callbacks[key] || jQuery.Callbacks()).add(args);
-            return self;
-        },
 
-        // remove function, that processes arbitrary callbacks from the arguments
-        remove = function(key) {
-            if(!_callbacks[key]) {
-                return;
-            }
-            var args = jQuery.makeArray(arguments);
-            args.shift();
-            if(!args.length) {
-                _callbacks[key].empty();
-            } else {
-                _callbacks[key].remove(args);
-            }
-            return self;
-        },
+  // the global shortcuts object
+  globalShortcuts = null;
 
-        empty = function() {
-            _callbacks = {};
-            return self;
-        },
 
-        // enable function
-        // keys can be passed in the arguments
-        enable = function(node) {
-            node = node || document;
-            var args = jQuery.makeArray(arguments);
-            this.disable.apply(this, args);
-            jQuery.each(_callbacks, function(key, callback) {
-                if(args.length === 0 || jQuery.inArray(key, args) > -1) {
-                    // use name spaces to use callbacks more than once
-                    jQuery(node).bind('keydown.' + key.replace(/\+/g, ''), key, function(event) {
-                        event.preventDefault();
-                        callback.fire();
-                    });
-                }
-            });
-            return self;
-        },
+  // simple helper functions
+  checkGlobalNS = function(id) {
+    if (!id) {
+      return null;
+    } else if (id == GLOBAL_NAMESPACE) {
+      return id;
+    } else if (id.indexOf(GLOBAL_NAMESPACE + DELIMITER) != 0) {
+      return GLOBAL_NAMESPACE + DELIMITER + id;
+    } else {
+      return id;
+    }
+  };
 
-        // disable function
-        // keys can be passed in the arguments
-        disable = function() {
-            var args = jQuery.makeArray(arguments);
-            jQuery.each(_callbacks, function(key, callback) {
-                if(args.length === 0 || jQuery.inArray(key, args) > -1) {
-                    // use namespaces to use callbacks more than once
-                    jQuery(document).unbind('keydown.' + key.replace(/\+/g, ''), callback.fire);
-                }
-            });
-            return self;
-        };
+  getParentId = function(id, n) {
+    n  = n == null ? 1 : n;
 
-        self = {
-            add: add,
-            remove: remove,
-            empty: empty,
-            enable: enable,
-            disable: disable
-        };
+    id = checkGlobalNS(id);
+    if (!id) {
+      return null;
+    }
 
-        if(id) {
-            _shortcuts[id] = self;
+    var parts = id.split(DELIMITER);
+    if (n > parts.length - 1) {
+      return null;
+    }
+
+    return parts.slice(0, -1 * n).join(DELIMITER);
+  };
+
+  getShortcuts = function(id) {
+    id = checkGlobalNS(id);
+    if (!id) {
+      return null;
+    }
+
+    var parts     = id.split(DELIMITER).slice(1);
+    var shortcuts = globalShortcuts;
+
+    while (parts.length) {
+      shortcuts = shortcuts.child(parts.shift());
+      if (!shortcuts) {
+        break;
+      }
+    }
+
+    return shortcuts;
+  };
+
+
+  // our main callable
+  Shortcuts = function(id) {
+    // id is required
+    if (!id) {
+      return null;
+    }
+
+    // prepend the global namespace
+    id = checkGlobalNS(id);
+
+    // get shortcuts object from store or create new one
+    var self = getShortcuts(id);
+    if (self) {
+      return self;
+    }
+
+    // the name of this logger
+    var name = id.split(DELIMITER).pop();
+
+    // create the parent shortcut object
+    var parentId = getParentId(id);
+    var parent   = getShortcuts(parentId) || arguments.callee(parentId);
+
+    // store child shortcuts
+    var children = {};
+
+    // all shortcut callbacks are stored in a jQuery.Callbacks objects
+    var callbacks = {};
+
+    // enabled status, false by default
+    var enabled = false;
+
+    // create a new shortcuts object
+    self = {
+      // return the id
+      id: function() {
+        return id;
+      },
+
+      // return the name
+      name: function() {
+        return name;
+      },
+
+      // return the parent shortcuts object
+      parent: function() {
+        return parent;
+      },
+
+      // return a child shortcuts object
+      child: function(name) {
+        return children[name];
+      },
+
+      // adds a child, only for internal usage
+      _addChild: function(child, name) {
+        children[name] = child;
+        return self;
+      },
+
+      // add arbitrary shortcuts handlers for a key
+      add: function(key) {
+        var handlers = Array.prototype.slice.call(arguments, 1);
+
+        // $.Callbacks object set?
+        if (!callbacks[key]) {
+          callbacks[key] = $.Callbacks();
+          callbacks[key].shortcutHandler = function(event) {
+            // prevent default?
+            callbacks[key].fire(event);
+          };
         }
+
+        callbacks[key].add(handlers);
+
+        return self;
+      },
+
+      // remove shortcuts handlers for a key
+      // if not handlers are passed, all handlers are removed for that keys
+      remove: function(key) {
+        if (!callbacks[key]) {
+          return self;
+        }
+
+        var handlers = Array.prototype.slice.call(arguments, 1);
+
+        if (!handlers.length) {
+          callbacks[key].empty();
+        } else {
+          callbacks[key].remove(handlers);
+        }
+
+        return self;
+      },
+
+      // remove all shortcut handlers for all keys
+      empty: function() {
+        Object.keys(callbacks).forEach(function(key) {
+          delete callbacks[key];
+        });
+
+        return self;
+      },
+
+      enable: function(target) {
+        target = target || DEFAULT_TARGET;
+
+        if (!enabled) {
+          // enable our own shortcuts
+          Object.keys(callbacks).forEach(function(key) {
+            var handler    = callbacks[key].shortcutHandler;
+            var cleanedKey = key.replace(/\+/g, "");
+
+            $(target).bind("keydown." + cleanedKey, key, handler);
+          });
+
+          // set the enabled state
+          enabled = true;
+        }
+
+        // enable all children
+        Object.keys(children).forEach(function(name) {
+          children[name].enable(target);
+        });
+
+        return self;
+      },
+
+      disable: function(target) {
+        target = target || DEFAULT_TARGET;
+
+        if (enabled) {
+          // disable our own shortcuts
+          Object.keys(callbacks).forEach(function(key) {
+            var handler    = callbacks[key].shortcutHandler;
+            var cleanedKey = key.replace(/\+/g, "");
+
+            $(target).unbind("keydown." + cleanedKey, handler);
+          });
+
+          // set the enabled state
+          enabled = false;
+        }
+
+        // disable all children
+        Object.keys(children).forEach(function(name) {
+          children[name].disable(target);
+        });
+
+        return self;
+      },
+
+      enabled: function() {
+        return enabled;
+      }
+    };
+
+    // finally, tell the parent about ourself
+    if (parent) {
+      parent._addChild(self, name);
     }
 
     return self;
-};
+  };
+
+
+  // create the global shortcuts object once
+  if (!globalShortcuts) {
+    globalShortcuts = Shortcuts(GLOBAL_NAMESPACE);
+  }
+
+
+  // add Shortcuts to jQuery
+  $.Shortcuts = Shortcuts;
+
+})(jQuery);

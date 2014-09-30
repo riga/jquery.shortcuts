@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="/test/jquery.hotkeys.js"></script>
+    <script src="/jquery.shortcuts.js"></script>
+  </head>
+
+  <body>
+    Sup?
+
+    <script>
+    $(function() {
+      var scFB = $.Shortcuts("foo.bar");
+      var scF  = $.Shortcuts("foo");
+
+      var handler = function() {
+        console.log("handler called");
+      };
+
+      scF.add("meta+l", handler);
+      scFB.add("meta+k", handler);
+
+      scFB.enable();
+      console.log("enabled", scFB.id());
+
+      window.setTimeout(function() {
+        scFB.disable();
+        console.log("disable", scFB.id());
+      }, 5000);
+
+      window.setTimeout(function() {
+        scF.enable();
+        console.log("enable", scF.id());
+      }, 8000);
+
+      window.setTimeout(function() {
+        $.Shortcuts("global").disable();
+        console.log("disable global");
+      }, 11000);
+    });
+    </script>
+  </body>
+
+</html>
