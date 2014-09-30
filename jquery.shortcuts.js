@@ -105,7 +105,7 @@
     // store child shortcuts
     var children = {};
 
-    // all shortcut callbacks are stored in a jQuery.Callbacks objects
+    // all shortcut callbacks are stored in jQuery.Callbacks objects
     var callbacks = {};
 
     // enabled status, false by default
