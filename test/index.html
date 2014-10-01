@@ -23,7 +23,7 @@
       scFB.add("meta+k", handler);
 
       scFB.enable();
-      console.log("enabled", scFB.id());
+      console.log("enable", scFB.id());
 
       window.setTimeout(function() {
         scFB.disable();
@@ -38,6 +38,8 @@
       window.setTimeout(function() {
         $.Shortcuts("global").disable();
         console.log("disable global");
+
+        console.log(scF.children());
       }, 11000);
     });
     </script>

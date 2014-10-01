@@ -1,5 +1,5 @@
 /*!
- * jQuery Shortcuts Plugin v1.0.0
+ * jQuery Shortcuts Plugin v1.0.3
  * https://github.com/riga/jquery.shortcuts
  *
  * Copyright 2014, Marcel Rieger
@@ -81,10 +81,8 @@
 
   // our main callable
   Shortcuts = function(id) {
-    // id is required
-    if (!id) {
-      return null;
-    }
+    // when no id is passed, use the global namespace
+    id = id || GLOBAL_NAMESPACE;
 
     // prepend the global namespace
     id = checkGlobalNS(id);
@@ -95,12 +93,21 @@
       return self;
     }
 
-    // the name of this logger
+    // the name of this Shortcuts object
     var name = id.split(DELIMITER).pop();
 
+    // the targets
+    var targets = Array.prototype.slice.call(arguments, 1);
+    if (!targets.length) {
+      targets.push(DEFAULT_TARGET);
+    }
+
     // create the parent shortcut object
+    var parent   = null;
     var parentId = getParentId(id);
-    var parent   = getShortcuts(parentId) || arguments.callee(parentId);
+    if (parentId) {
+      parent = getShortcuts(parentId) || arguments.callee(parentId);
+    }
 
     // store child shortcuts
     var children = {};
@@ -131,6 +138,11 @@
       // return a child shortcuts object
       child: function(name) {
         return children[name];
+      },
+
+      // return all children, mapped to their names
+      children: function() {
+        return children;
       },
 
       // adds a child, only for internal usage
@@ -184,16 +196,16 @@
         return self;
       },
 
-      enable: function(target) {
-        target = target || DEFAULT_TARGET;
-
+      enable: function() {
         if (!enabled) {
           // enable our own shortcuts
           Object.keys(callbacks).forEach(function(key) {
             var handler    = callbacks[key].shortcutHandler;
             var cleanedKey = key.replace(/\+/g, "");
 
-            $(target).bind("keydown." + cleanedKey, key, handler);
+            targets.forEach(function(target) {
+              $(target).bind("keydown." + cleanedKey, key, handler);
+            });
           });
 
           // set the enabled state
@@ -202,22 +214,22 @@
 
         // enable all children
         Object.keys(children).forEach(function(name) {
-          children[name].enable(target);
+          children[name].enable();
         });
 
         return self;
       },
 
-      disable: function(target) {
-        target = target || DEFAULT_TARGET;
-
+      disable: function() {
         if (enabled) {
           // disable our own shortcuts
           Object.keys(callbacks).forEach(function(key) {
             var handler    = callbacks[key].shortcutHandler;
             var cleanedKey = key.replace(/\+/g, "");
 
-            $(target).unbind("keydown." + cleanedKey, handler);
+            targets.forEach(function(target) {
+              $(target).unbind("keydown." + cleanedKey, handler);
+            });
           });
 
           // set the enabled state
@@ -226,7 +238,7 @@
 
         // disable all children
         Object.keys(children).forEach(function(name) {
-          children[name].disable(target);
+          children[name].disable.call(null, targets);
         });
 
         return self;
@@ -234,12 +246,21 @@
 
       enabled: function() {
         return enabled;
+      },
+
+      targets: function() {
+        return targets;
       }
     };
 
-    // finally, tell the parent about ourself
+    // tell the parent about ourself
     if (parent) {
       parent._addChild(self, name);
+    }
+
+    // enable, if our parent is enabled
+    if (parent && parent.enabled()) {
+      self.enable();
     }
 
     return self;
