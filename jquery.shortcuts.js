@@ -1,5 +1,5 @@
 /*!
- * jQuery Shortcuts Plugin v1.0.3
+ * jQuery Shortcuts Plugin v1.0.4
  * https://github.com/riga/jquery.shortcuts
  *
  * Copyright 2014, Marcel Rieger
@@ -106,7 +106,7 @@
     var parent   = null;
     var parentId = getParentId(id);
     if (parentId) {
-      parent = getShortcuts(parentId) || arguments.callee(parentId);
+      parent = getShortcuts(parentId) || arguments.callee.apply(null, [parentId].concat(targets));
     }
 
     // store child shortcuts

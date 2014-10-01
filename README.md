@@ -1,4 +1,4 @@
-# jQuery.Shortcuts
+# jQuery.Shortcuts (v1.0.4)
 
 jQuery.Shortcuts lets you easily switch between sets of arbitrary and easy-to-define shortcuts. You can even manage the sets of shortcuts via namespaces.
 
