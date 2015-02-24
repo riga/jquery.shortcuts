@@ -1,5 +1,5 @@
 /*!
- * jQuery Shortcuts Plugin v1.0.4
+ * jQuery Shortcuts Plugin v1.1.0
  * https://github.com/riga/jquery.shortcuts
  *
  * Copyright 2014, Marcel Rieger
@@ -16,13 +16,14 @@
 
   var GLOBAL_NAMESPACE, DELIMITER, DEFAULT_TARGET,
       globalShortcuts,
-      checkGlobalNS, getParentId, getShortcuts,
+      checkGlobalNS, getParentId, getShortcuts, parseKey,
       Shortcuts;
 
 
   // some constants
   GLOBAL_NAMESPACE = "global";
   DELIMITER        = ".";
+  DEFAULT_EVENT    = "keydown";
   DEFAULT_TARGET   = document;
 
 
@@ -76,6 +77,28 @@
     }
 
     return shortcuts;
+  };
+
+  parseKey = function(key) {
+    var cleanedKey, id, event;
+
+    // first, get the event type, 
+    var match = /^([a-zA-Z]+)\:.+$/.exec(key);
+    if (!match) {
+      event      = DEFAULT_EVENT;
+      cleanedKey = key;
+    } else {
+      event      = match[1];
+      cleanedKey = key.substr(event.length + 1);
+    }
+
+    id = event + "." + cleanedKey.replace(/\+/g, "");
+
+    return {
+      key  : cleanedKey,
+      id   : id,
+      event: event
+    };
   };
 
 
@@ -201,10 +224,10 @@
           // enable our own shortcuts
           Object.keys(callbacks).forEach(function(key) {
             var handler    = callbacks[key].shortcutHandler;
-            var cleanedKey = key.replace(/\+/g, "");
+            var parsedData = parseKey(key);
 
             targets.forEach(function(target) {
-              $(target).bind("keydown." + cleanedKey, key, handler);
+              $(target).bind(parsedData.id, parsedData.key, handler);
             });
           });
 
@@ -225,10 +248,10 @@
           // disable our own shortcuts
           Object.keys(callbacks).forEach(function(key) {
             var handler    = callbacks[key].shortcutHandler;
-            var cleanedKey = key.replace(/\+/g, "");
+            var parsedData = parseKey(key);
 
             targets.forEach(function(target) {
-              $(target).unbind("keydown." + cleanedKey, handler);
+              $(target).unbind(parsedData.id, handler);
             });
           });
 

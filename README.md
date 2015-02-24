@@ -1,4 +1,4 @@
-# jQuery.Shortcuts (v1.0.4)
+# jQuery.Shortcuts (v1.1.0)
 
 jQuery.Shortcuts lets you easily switch between sets of arbitrary and easy-to-define shortcuts. You can even manage the sets of shortcuts via namespaces.
 
@@ -75,7 +75,7 @@ console.log(myTopSc.child("sub") == mySubSc);
 	> Return a children, mapped to their names.
 
 * `add(key, [handler1], [handler2], [...])`
-	> Add handlers for a shortcut given by `key`. See [John Resig's hotkeys plugin](https://github.com/jeresig/jquery.hotkeys) for more information on the format.
+	> Add handlers for a shortcut given by `key`. See [John Resig's hotkeys plugin](https://github.com/jeresig/jquery.hotkeys) for more information on the format. As of version 1.1.0, you can prepend the desired event type to your key using the colon character, e.g. `keydown:ctrl+a`. `keydown` is the default. Other valid events are `keyup` and `keypress`.
 
 * `remove(key, [handler1], [handler2], [...])`
 	> Remove handlers for a shortcut given by `key`. If no handlers are given, remove all handlers for that
