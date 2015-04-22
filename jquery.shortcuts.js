@@ -1,11 +1,10 @@
 /*!
- * jQuery Shortcuts Plugin v1.1.0
+ * jQuery Shortcuts Plugin v1.2.0
  * https://github.com/riga/jquery.shortcuts
  *
- * Copyright 2014, Marcel Rieger
- * Dual licensed under the MIT or GPL Version 3 licenses.
+ * Copyright 2015, Marcel Rieger
+ * MIT licensed
  * http://www.opensource.org/licenses/mit-license
- * http://www.opensource.org/licenses/GPL-3.0
  *
  * Dependencies:
  *     jQuery Hotkeys Plugin by John Resig:
@@ -14,63 +13,81 @@
 
 (function($) {
 
-  var GLOBAL_NAMESPACE, DELIMITER, DEFAULT_TARGET,
-      globalShortcuts,
-      checkGlobalNS, getParentId, getShortcuts, parseKey,
-      Shortcuts;
+  /**
+   * Store the global shortcuts object.
+   */
+
+  var globalShortcuts;
 
 
-  // some constants
-  GLOBAL_NAMESPACE = "global";
-  DELIMITER        = ".";
-  DEFAULT_EVENT    = "keydown";
-  DEFAULT_TARGET   = document;
+  /**
+   * Default options.
+   */
+
+  var options = {
+    // name of the global namespace
+    global: "global",
+
+    // delimitter that separates namespaces
+    delimitter: ".",
+
+    // the default event type
+    defaultEvent: "keydown",
+
+    // the target
+    target: document
+  };
 
 
-  // the global shortcuts object
-  globalShortcuts = null;
+  /**
+   * Helper function that prefixes a namespace with the global namespace.
+   *
+   * @param {string} namespace - The namespace to prefix.
+   * @returns {string}
+   */
+  var prefixNamespace = function(namespace) {
+    var prefix = options.global + options.delimitter;
 
-
-  // simple helper functions
-  checkGlobalNS = function(id) {
-    if (!id) {
-      return null;
-    } else if (id == GLOBAL_NAMESPACE) {
-      return id;
-    } else if (id.indexOf(GLOBAL_NAMESPACE + DELIMITER) != 0) {
-      return GLOBAL_NAMESPACE + DELIMITER + id;
+    if (namespace === undefined || namespace == options.global) {
+      return options.global;
+    } else if (namespace.indexOf(prefix) != 0) {
+      return prefix + namespace;
     } else {
-      return id;
+      return namespace;
     }
   };
 
-  getParentId = function(id, n) {
-    n  = n == null ? 1 : n;
 
-    id = checkGlobalNS(id);
-    if (!id) {
+  /**
+   * Helper function that returns a specific shortcuts object for a given namespace.
+   *
+   * @param {string} namespace - Namespace of the shortcuts object.
+   */
+  var getShortcuts = function(namespace) {
+    if (namespace === undefined) {
       return null;
     }
 
-    var parts = id.split(DELIMITER);
-    if (n > parts.length - 1) {
+    // the global shortcuts object needs to be setup
+    if (!globalShortcuts) {
       return null;
     }
 
-    return parts.slice(0, -1 * n).join(DELIMITER);
-  };
+    // prefix the namespace
+    namespace = prefixNamespace(namespace);
 
-  getShortcuts = function(id) {
-    id = checkGlobalNS(id);
-    if (!id) {
-      return null;
-    }
+    // split the namespace by our delimitter
+    var parts = namespace.split(options.delimitter);
 
-    var parts     = id.split(DELIMITER).slice(1);
+    // remove the global namespace
+    parts.shift();
+
+    // recursive lookup in each shortcut object's sub objects
     var shortcuts = globalShortcuts;
-
     while (parts.length) {
-      shortcuts = shortcuts.child(parts.shift());
+      shortcuts = shortcuts.children()[parts.shift()];
+
+      // error case
       if (!shortcuts) {
         break;
       }
@@ -79,20 +96,49 @@
     return shortcuts;
   };
 
-  parseKey = function(key) {
-    var cleanedKey, id, event;
+
+  /**
+   * Helper function that returns the name of a shortcuts object given its namespace.
+   *
+   * @param {string} namespace - The namespace of the shortcuts object.
+   * @returns {string}
+   */
+  var getShortcutsName = function(namespace) {
+    if (namespace === undefined) {
+      return null;
+    }
+
+    // prefix the namespace
+    namespace = prefixNamespace(namespace);
+
+    // the last part is the name
+    return namespace.split(options.delimitter).pop();
+  };
+
+
+  /**
+   * Helper functions that parses a key and returns helpful variables in an object.
+   *
+   * @example
+   * parseKey("meta+k");
+   * -> { key: "meta+k", event: "keydown", cleanedKey: "keydown.metak" }
+   * @param {string} key - The key to parse.
+   * @returns {object}
+   */
+  var parseKey = function(key) {
+    var event, cleanedKey;
 
     // first, get the event type, 
     var match = /^([a-zA-Z]+)\:.+$/.exec(key);
     if (!match) {
-      event      = DEFAULT_EVENT;
+      event      = options.defaultEvent;
       cleanedKey = key;
     } else {
       event      = match[1];
       cleanedKey = key.substr(event.length + 1);
     }
 
-    id = event + "." + cleanedKey.replace(/\+/g, "");
+    var id = event + "." + cleanedKey.replace(/\+/g, "");
 
     return {
       key  : cleanedKey,
@@ -102,201 +148,211 @@
   };
 
 
-  // our main callable
-  Shortcuts = function(id) {
-    // when no id is passed, use the global namespace
-    id = id || GLOBAL_NAMESPACE;
 
-    // prepend the global namespace
-    id = checkGlobalNS(id);
+  /**
+   * Shortcuts definition.
+   *
+   * @param {string|object} [namespace=globalNamespace] - A string that defines the namespace of the
+   *  new shortcuts. In that case, the global namespace will be prefixed and the created shortcuts
+   *  object is returned. When an object is passed, it is used to extend the default options and the
+   *  main shortcuts object is returned. Make sure to extend the options _before_ instantiating the
+   *  first shortcuts object.
+   * @returns {shortcuts|Shortcuts}
+   */
+  $.Shortcuts = function(namespace) {
 
-    // get shortcuts object from store or create new one
-    var self = getShortcuts(id);
+    // create shortcuts or extend default options
+    if ($.isPlainObject(namespace)) {
+      $.extend(options, namespace);
+
+      return $.Shortcuts;
+    }
+
+
+    // prefix the global namespace
+    namespace = prefixNamespace(namespace);
+
+
+    // is there already a shortcuts object with that namespace?
+    var self = getShortcuts(namespace);
+
     if (self) {
       return self;
     }
 
-    // the name of this Shortcuts object
-    var name = id.split(DELIMITER).pop();
 
-    // the targets
-    var targets = Array.prototype.slice.call(arguments, 1);
-    if (!targets.length) {
-      targets.push(DEFAULT_TARGET);
-    }
-
-    // create the parent shortcut object
-    var parent   = null;
-    var parentId = getParentId(id);
-    if (parentId) {
-      parent = getShortcuts(parentId) || arguments.callee.apply(null, [parentId].concat(targets));
-    }
-
-    // store child shortcuts
-    var children = {};
-
-    // all shortcut callbacks are stored in jQuery.Callbacks objects
-    var callbacks = {};
-
-    // enabled status, false by default
-    var enabled = false;
-
-    // create a new shortcuts object
+    // define a new logger
     self = {
-      // return the id
-      id: function() {
-        return id;
-      },
+      // current state
+      _enabled: false,
 
-      // return the name
+      // the namespace
+      _namespace: namespace,
+
+      // the name
+      _name: getShortcutsName(namespace),
+
+      // parent shortcuts
+      _parent: null,
+
+      // child shortcuts
+      _children: {},
+
+      // callbacks are stored in jQuery.Callbacks objects, mapped to a key
+      _callbacks: {},
+
+      // name getter
       name: function() {
-        return name;
+        return self._name;
       },
 
-      // return the parent shortcuts object
+      // namespace getter
+      namespace: function() {
+        return self._namespace;
+      },
+
+      // parent getter
       parent: function() {
-        return parent;
+        return self._parent;
       },
 
-      // return a child shortcuts object
-      child: function(name) {
-        return children[name];
-      },
-
-      // return all children, mapped to their names
+      // children getter
       children: function() {
-        return children;
+        return self._children;
       },
 
-      // adds a child, only for internal usage
-      _addChild: function(child, name) {
-        children[name] = child;
-        return self;
+      // specific child getter
+      child: function(name) {
+        return self._children[name] || null;
       },
 
-      // add arbitrary shortcuts handlers for a key
-      add: function(key) {
-        var handlers = Array.prototype.slice.call(arguments, 1);
-
-        // $.Callbacks object set?
-        if (!callbacks[key]) {
-          callbacks[key] = $.Callbacks();
-          callbacks[key].shortcutHandler = function(event) {
-            // prevent default?
-            callbacks[key].fire(event);
-          };
-        }
-
-        callbacks[key].add(handlers);
-
-        return self;
+      // enabled getter
+      enabled: function() {
+        return self._enabled;
       },
 
-      // remove shortcuts handlers for a key
-      // if not handlers are passed, all handlers are removed for that keys
-      remove: function(key) {
-        if (!callbacks[key]) {
-          return self;
-        }
-
-        var handlers = Array.prototype.slice.call(arguments, 1);
-
-        if (!handlers.length) {
-          callbacks[key].empty();
-        } else {
-          callbacks[key].remove(handlers);
-        }
-
-        return self;
-      },
-
-      // remove all shortcut handlers for all keys
-      empty: function() {
-        Object.keys(callbacks).forEach(function(key) {
-          delete callbacks[key];
-        });
-
-        return self;
-      },
-
+      // enabled setters
       enable: function() {
-        if (!enabled) {
-          // enable our own shortcuts
-          Object.keys(callbacks).forEach(function(key) {
-            var handler    = callbacks[key].shortcutHandler;
-            var parsedData = parseKey(key);
-
-            targets.forEach(function(target) {
-              $(target).bind(parsedData.id, parsedData.key, handler);
-            });
-          });
-
-          // set the enabled state
-          enabled = true;
-        }
-
-        // enable all children
-        Object.keys(children).forEach(function(name) {
-          children[name].enable();
-        });
+        self._enabled = true;
 
         return self;
       },
 
       disable: function() {
-        if (enabled) {
-          // disable our own shortcuts
-          Object.keys(callbacks).forEach(function(key) {
-            var handler    = callbacks[key].shortcutHandler;
-            var parsedData = parseKey(key);
-
-            targets.forEach(function(target) {
-              $(target).unbind(parsedData.id, handler);
-            });
-          });
-
-          // set the enabled state
-          enabled = false;
-        }
-
-        // disable all children
-        Object.keys(children).forEach(function(name) {
-          children[name].disable.call(null, targets);
-        });
+        self._enabled = false;
 
         return self;
       },
 
-      enabled: function() {
-        return enabled;
+      // determines whether handlers of this object can be fired
+      // this depends on the current state and the activity of the parent
+      _active: function() {
+        return self.enabled() && (self.parent() == null || self.parent()._active());
       },
 
-      targets: function() {
-        return targets;
+      // adds handlers for a key
+      add: function(key) {
+        var handlers = Array.prototype.slice.call(arguments, 1);
+
+        // the callbacks object for this key is set only once
+        if (!self._callbacks[key]) {
+          var cbs = self._callbacks[key] = $.Callbacks();
+
+          // create a wrapper that checks the activity before
+          // invoking the callbacks
+          cbs.shortcutHandler = function(event) {
+            if (!self._active()) {
+              return;
+            }
+
+            // prevent default?
+            cbs.fire(event);
+          };
+
+          // actual event binding
+          var data = parseKey(key);
+          $(options.target).bind(data.id, data.key, cbs.shortcutHandler);
+        }
+
+        // add all handlers to the callbacks object
+        self._callbacks[key].add(handlers);
+
+        return self;
+      },
+
+      // remove handlers for a key
+      // if no handlers are passed, all handlers for that key are removed
+      remove: function(key) {
+        var cbs = self._callbacks[key];
+
+        if (!self._callbacks[key]) {
+          return self;
+        }
+
+        var handlers = Array.prototype.slice.call(arguments, 1);
+
+        if (handlers.length > 0) {
+          cbs.remove(handlers);
+        } else {
+          cbs.empty();
+        }
+
+        return self;
+      },
+
+      // remove all handlers for all keys
+      empty: function() {
+        for (var key in self._callbacks) {
+          self.remove(key);
+        }
+
+        return self;
+      },
+
+      // options getter
+      options: function() {
+        return options;
       }
     };
 
-    // tell the parent about ourself
-    if (parent) {
-      parent._addChild(self, name);
+
+    /**
+     * Store the new shortcuts object.
+     */
+
+    if (namespace == options.global) {
+      globalShortcuts = self;
+
+      // the global shortcuts are enabled by default
+      self.enable();
+
+    } else {
+      // find the proper parent shortcuts
+      var parts = namespace.split(options.delimitter);
+      parts.pop();
+      var parentNamespace = parts.join(options.delimitter);
+      self._parent = getShortcuts(parentNamespace);
+
+      // create if it does not exist yet
+      if (!self._parent) {
+        self._parent = $.Shortcuts(parentNamespace);
+      }
+
+      // add self to _parent
+      self._parent._children[self.name()] = self;
+
+      // enable if _parent is also enabled
+      if (self._parent.enabled()) {
+        self.enable();
+      }
     }
 
-    // enable, if our parent is enabled
-    if (parent && parent.enabled()) {
-      self.enable();
-    }
+
+    /**
+     * Return the created shortcuts.
+     */
 
     return self;
   };
-
-
-  // create the global shortcuts object once
-  if (!globalShortcuts) {
-    globalShortcuts = Shortcuts(GLOBAL_NAMESPACE);
-  }
-
-
-  // add Shortcuts to jQuery
-  $.Shortcuts = Shortcuts;
 
 })(jQuery);

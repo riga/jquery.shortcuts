@@ -21,26 +21,6 @@
 
       scF.add("meta+l", handler);
       scFB.add("meta+k", handler);
-
-      scFB.enable();
-      console.log("enable", scFB.id());
-
-      window.setTimeout(function() {
-        scFB.disable();
-        console.log("disable", scFB.id());
-      }, 5000);
-
-      window.setTimeout(function() {
-        scF.enable();
-        console.log("enable", scF.id());
-      }, 8000);
-
-      window.setTimeout(function() {
-        $.Shortcuts("global").disable();
-        console.log("disable global");
-
-        console.log(scF.children());
-      }, 11000);
     });
     </script>
   </body>

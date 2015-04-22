@@ -1,4 +1,4 @@
-# jQuery.Shortcuts (v1.1.0)
+# jQuery.Shortcuts
 
 jQuery.Shortcuts lets you easily switch between sets of arbitrary and easy-to-define shortcuts. You can even manage the sets of shortcuts via namespaces.
 
@@ -12,9 +12,9 @@ This jQuery plugin requires [John Resig's hotkeys plugin](https://github.com/jer
 
 ##### Add and remove (global) shortcuts:
 
-```javascript
-// get the (global) shortcuts object and enable it
-var sc = $.Shortcuts().enable();
+```
+// get the (global) shortcuts object
+var sc = $.Shortcuts();
 
 // add a handler for ctrl+h
 var handler = function(event) {
@@ -28,17 +28,16 @@ sc.remove("ctrl+h", handler);
 ```
 
 
-##### Handle sets and subsets of shortcuts using namespaces:
+##### Handle shortcut parentage using namespaces:
 
-```javascript
-// register and enable a new shortcuts object
-var myTopSc = $.Shortcuts("top").enable();
+```
+// register a new shortcuts object
+var myTopSc = $.Shortcuts("top");
 
 // when we disable the global namespace, all sub namespaces are also disabled
 // e.g.: $.Shortcuts().disable();
 
-// register another shortcuts objet that belongs to "top"
-// there's no need to enable it, since we already enabled "top"
+// register another shortcuts object that belongs to "top"
 var mySubSc = $.Shortcuts("top.sub");
 
 console.log(mySubSc.parent() == myTopSc);
@@ -50,51 +49,67 @@ console.log(myTopSc.child("sub") == mySubSc);
 ```
 
 
+##### Configuration
+
+```javascript
+// configure $.Shortcuts _before_ you create any instance
+// (these are the default options)
+$.Shortcuts({
+    // name of the global namespace
+    global: "global",
+
+    // delimitter that separates namespaces
+    delimitter: ".",
+
+    // the default event type
+    defaultEvent: "keydown",
+
+    // the target
+    target: document
+});
+```
+
+
 ## API
 
-* **`$.Shortcuts([id], [target1], [target2], [...])`**
-	> Returns a Shortcuts object. If `id` is empty, the global namespace is used. Otherwise, a new Shortcuts
-	object will the created, that is a child of the global object. This also works when passing an `id` that
-	implies namespaces. E.g. `$.Shortcuts("a.b.c")` recursively creates Shortcuts objects `"a"` and `"b"` and
-	returns a Shortcuts object named `"c"`. `targets` are the DOM nodes that receive the handlers via
-	`bind`/`unbind`. If no `target` is given, `document` is used instead.
+* **`$.Shortcuts([namespace|options])`**
+    > If `options` are passed, the global options are extended and the `$.Shortcuts` object is returned. If a `namespace` is passed, a new shortcuts instance with that namespace is created and returned. When no argument is given, the global shortcuts object is returned. Parentage is built automatically. A namespace consists of a number of names seperated by a delimitter. Example: namespace `"foo.bar"` => shortcuts `"global"` -> shortcuts `"foo"` -> shortcuts `"bar"`. **Note** that the global namespace (`"global"` in this example) is always prepended.
 
-* `id()`
-	> Returns the `id`. E.g. `$.Shortcuts("a.b.c").id()` will give `"global.a.b.c"`.
-	
+* `namespace()`
+    > Returns the `namespace`.
+    
 * `name()`
-	> Returns the `name`. E.g. `$.Shortcuts("a.b.c").id()` will give `"c"`.
-	
+    > Returns the `name`.
+    
 * `parent()`
-	> Returns the parent, or `null` for the global object.
-	
-* `child(name)`
-	> Return a child given by `name`.
+    > Returns the parent shortcuts, or `null` when invoked on the global shortcuts object.
 
 * `children()`
-	> Return a children, mapped to their names.
+    > Return all child shortcut objects mapped to their names.
 
+* `child(name)`
+    > Return a child shortcuts object given by `name`.
+
+* `enabled()`
+    > Returns the state.
+
+* `enable()`
+    > Enable the shorcuts. **Note** that in case the parent is disabled, _this_ shorcuts do not fire even if they are enabled!
+
+* `disable()`
+    > Disable the shortcuts. Please see the **note** in `enable()`.
+    
 * `add(key, [handler1], [handler2], [...])`
 	> Add handlers for a shortcut given by `key`. See [John Resig's hotkeys plugin](https://github.com/jeresig/jquery.hotkeys) for more information on the format. As of version 1.1.0, you can prepend the desired event type to your key using the colon character, e.g. `keydown:ctrl+a`. `keydown` is the default. Other valid events are `keyup` and `keypress`.
 
 * `remove(key, [handler1], [handler2], [...])`
-	> Remove handlers for a shortcut given by `key`. If no handlers are given, remove all handlers for that
-	`key`.
+	> Remove handlers for a shortcut given by `key`. If no handlers are given, remove all handlers for that `key`.
 
 * `empty()`
 	> Remove all handlers for all keys.
 
-* `enable()`
-	> Enable all handlers and call `enable()` for all children.
-
-* `disable()`
-	> Disable all handlers and call `disable()` for all children.
-
-* `enabled()`
-	> Returns `true` (`false`) if the Shortcuts object is enabled (disabled).
-	
-* `targets()`
-	> Returns an array containing all `targets` passed in the _constructor_.
+* `options()`
+    > Returns the current options.
 
 
 # Development
