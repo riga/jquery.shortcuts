@@ -12,7 +12,7 @@ This jQuery plugin requires [John Resig's hotkeys plugin](https://github.com/jer
 
 ##### Add and remove (global) shortcuts:
 
-```
+```javascript
 // get the (global) shortcuts object
 var sc = $.Shortcuts();
 
@@ -30,7 +30,7 @@ sc.remove("ctrl+h", handler);
 
 ##### Handle shortcut parentage using namespaces:
 
-```
+```javascript
 // register a new shortcuts object
 var myTopSc = $.Shortcuts("top");
 
