@@ -12,15 +12,22 @@
 
     <script>
     $(function() {
+      $.Shortcuts({priorities: true});
+
       var scFB = $.Shortcuts("foo.bar");
       var scF  = $.Shortcuts("foo");
 
-      var handler = function() {
-        console.log("handler called");
+      var handler = function(msg) {
+        return function() {
+          console.log("handler called with msg:", msg);
+        };
       };
 
-      scF.add("meta+l", handler);
-      scFB.add("meta+k", handler);
+      scF.add("meta+l", handler("meta+l called on scF"));
+      scFB.add("meta+k", handler("meta+k called on scFB"));
+      scFB.add("meta+l", handler("meta+l called on scFB"));
+
+      scF.priority(10);
     });
     </script>
   </body>

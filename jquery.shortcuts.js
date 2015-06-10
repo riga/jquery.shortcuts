@@ -1,5 +1,5 @@
 /*!
- * jQuery Shortcuts Plugin v1.2.0
+ * jQuery Shortcuts Plugin v1.3.0
  * https://github.com/riga/jquery.shortcuts
  *
  * Copyright 2015, Marcel Rieger
@@ -21,6 +21,14 @@
 
 
   /**
+   * Bookkeeping for mapping "key -> group" for
+   * faster resolving priorities.
+   */
+
+  var keyGroupMap = {};
+
+
+  /**
    * Default options.
    */
 
@@ -35,7 +43,10 @@
     defaultEvent: "keydown",
 
     // the target
-    target: document
+    target: document,
+
+    // apply priorities?
+    priorities: false
   };
 
 
@@ -192,6 +203,9 @@
       // the name
       _name: getShortcutsName(namespace),
 
+      // the priority
+      _priority: 0,
+
       // parent shortcuts
       _parent: null,
 
@@ -209,6 +223,15 @@
       // namespace getter
       namespace: function() {
         return self._namespace;
+      },
+
+      // priority getter/setter
+      priority: function(priority) {
+        if (priority === undefined) {
+          return self._priority;
+        } else {
+          self._priority = priority;
+        }
       },
 
       // parent getter
@@ -250,6 +273,22 @@
         return self.enabled() && (self.parent() == null || self.parent()._active());
       },
 
+      // determines for an invoked key event whether the callback can be fired, i.e.
+      // there's no other group listening for the key event with a higher priority
+      _hasPrecedence: function(key) {
+        var groups = keyGroupMap[key];
+
+        if (!groups || groups.length == 0) {
+          return true;
+        }
+
+        var highestPrio = Math.max.apply(Math, groups.map(function(group) {
+          return group.priority();
+        }));
+
+        return self.priority() >= highestPrio;
+      },
+
       // adds handlers for a key
       add: function(key) {
         var handlers = Array.prototype.slice.call(arguments, 1);
@@ -265,6 +304,11 @@
               return;
             }
 
+            // handle priorities
+            if (options.priorities && !self._hasPrecedence(key)) {
+              return;
+            }
+
             // prevent default?
             cbs.fire(event);
           };
@@ -277,6 +321,12 @@
         // add all handlers to the callbacks object
         self._callbacks[key].add(handlers);
 
+        // store the info that _this_ group (self) listens to that key
+        var groups = keyGroupMap[key] = keyGroupMap[key] || [];
+        if (!~groups.indexOf(self)) {
+          groups.push(self);
+        }
+
         return self;
       },
 
@@ -284,6 +334,15 @@
       // if no handlers are passed, all handlers for that key are removed
       remove: function(key) {
         var cbs = self._callbacks[key];
+
+        // remove _this_ group (self) from the key group mapping
+        var groups = keyGroupMap[key];
+        if (groups) {
+          var idx = groups.indexOf(self);
+          if (~idx) {
+            groups.splice(idx, 1);
+          }
+        }
 
         if (!self._callbacks[key]) {
           return self;
