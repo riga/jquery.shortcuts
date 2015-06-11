@@ -34,7 +34,7 @@ $.Shortcuts({
 ```
 
 
-##### Add and remove (global) shortcuts:
+##### Add and remove (global) shortcuts
 
 ```javascript
 // get the (global) shortcut group
@@ -42,7 +42,7 @@ var sc = $.Shortcuts();
 
 // add a handler for ctrl+h
 var handler = function(event) {
-	// some nifty action
+    // some nifty action
 };
 sc.add("ctrl+h", handler);
 
@@ -52,7 +52,7 @@ sc.remove("ctrl+h", handler);
 ```
 
 
-##### Handle shortcut parentage using namespaces:
+##### Handle shortcut parentage using namespaces
 
 ```javascript
 // register a new shortcut group
@@ -84,7 +84,7 @@ var sc2 = $.Shortcuts("two");
 
 // create and apply a handler for the same key event
 var handler = function(event) {
-	// do sth here
+    // do sth here
 };
 sc1.add("ctrl+h", handler);
 sc2.add("ctrl+h", handler);
@@ -126,18 +126,18 @@ sc2.priority(10);
 
 * `disable()`
     > Disable the shortcuts. Please see the **note** in `enable()`.
-    
+
 * `priority([priority])`
-	> When `priority` is given, the priority is set to that value. Otherwise, the current priority is returned. **Note** that priorities are only applied, when the `priorities` option is set to `true`.
+    > When `priority` is given, the priority is set to that value. Otherwise, the current priority is returned. **Note** that priorities are only applied, when the `priorities` option is set to `true`.
     
 * `add(key, [handler1], [handler2], [...])`
-	> Add handlers for a shortcut given by `key`. See [John Resig's hotkeys plugin](https://github.com/jeresig/jquery.hotkeys) for more information on the format. As of version 1.1.0, you can prepend the desired event type to your key using the colon character, e.g. `keydown:ctrl+a`. `keydown` is the default. Other valid events are `keyup` and `keypress`.
+    > Add handlers for a shortcut given by `key`. See [John Resig's hotkeys plugin](https://github.com/jeresig/jquery.hotkeys) for more information on the format. As of version 1.1.0, you can prepend the desired event type to your key using the colon character, e.g. `keydown:ctrl+a`. `keydown` is the default. Other valid events are `keyup` and `keypress`.
 
 * `remove(key, [handler1], [handler2], [...])`
-	> Remove handlers for a shortcut given by `key`. If no handlers are given, remove all handlers for that `key`.
+    > Remove handlers for a shortcut given by `key`. If no handlers are given, remove all handlers for that `key`.
 
 * `empty()`
-	> Remove all handlers for all keys.
+    > Remove all handlers for all keys.
 
 * `options()`
     > Returns the current options.
