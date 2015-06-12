@@ -1,8 +1,8 @@
 {
 	"name": "jquery-shortcuts",
-	"version": "1.3.0",
+	"version": "1.3.1",
 	"author": "Marcel Rieger <marcelrieger@icloud.com>",
-	"description": "jQuery.Shortcuts lets you easily switch between sets of arbitrary and easy-to-define shortcuts.",
+	"description": "jQuery.Shortcuts lets you easily switch between groups of arbitrary and easy-to-define shortcuts.",
 	"keywords": [
 		"jquery-plugin",
 		"shortcuts",

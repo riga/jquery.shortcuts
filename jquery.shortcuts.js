@@ -1,5 +1,5 @@
 /*!
- * jQuery Shortcuts Plugin v1.3.0
+ * jQuery Shortcuts Plugin v1.3.1
  * https://github.com/riga/jquery.shortcuts
  *
  * Copyright 2015, Marcel Rieger
@@ -14,7 +14,7 @@
 (function($) {
 
   /**
-   * Store the global shortcuts object.
+   * Store the global shortcut group.
    */
 
   var globalShortcuts;
@@ -70,7 +70,7 @@
 
 
   /**
-   * Helper function that returns a specific shortcuts object for a given namespace.
+   * Helper function that returns a specific shortcut group for a given namespace.
    *
    * @param {string} namespace - Namespace of the shortcuts object.
    */
@@ -79,7 +79,7 @@
       return null;
     }
 
-    // the global shortcuts object needs to be setup
+    // the global shortcut group needs to be setup
     if (!globalShortcuts) {
       return null;
     }
@@ -93,7 +93,7 @@
     // remove the global namespace
     parts.shift();
 
-    // recursive lookup in each shortcut object's sub objects
+    // recursive lookup in each shortcut group's subgroups
     var shortcuts = globalShortcuts;
     while (parts.length) {
       shortcuts = shortcuts.children()[parts.shift()];
@@ -109,9 +109,9 @@
 
 
   /**
-   * Helper function that returns the name of a shortcuts object given its namespace.
+   * Helper function that returns the name of a shortcut group given its namespace.
    *
-   * @param {string} namespace - The namespace of the shortcuts object.
+   * @param {string} namespace - The namespace of the shortcut group.
    * @returns {string}
    */
   var getShortcutsName = function(namespace) {
@@ -128,7 +128,7 @@
 
 
   /**
-   * Helper functions that parses a key and returns helpful variables in an object.
+   * Helper functions that parses a key and returns helpful variables.
    *
    * @example
    * parseKey("meta+k");
@@ -164,10 +164,10 @@
    * Shortcuts definition.
    *
    * @param {string|object} [namespace=globalNamespace] - A string that defines the namespace of the
-   *  new shortcuts. In that case, the global namespace will be prefixed and the created shortcuts
-   *  object is returned. When an object is passed, it is used to extend the default options and the
-   *  main shortcuts object is returned. Make sure to extend the options _before_ instantiating the
-   *  first shortcuts object.
+   *  new shortcuts. In that case, the global namespace will be prefixed and the created shortcut
+   *  group is returned. When an object is passed, it is used to extend the default options and the
+   *  main `Shortcuts` object is returned. Make sure to extend the options _before_ instantiating
+   *  the first shortcut group.
    * @returns {shortcuts|Shortcuts}
    */
   $.Shortcuts = function(namespace) {
@@ -184,7 +184,7 @@
     namespace = prefixNamespace(namespace);
 
 
-    // is there already a shortcuts object with that namespace?
+    // is there already a shortcut group with that namespace?
     var self = getShortcuts(namespace);
 
     if (self) {
@@ -376,7 +376,7 @@
 
 
     /**
-     * Store the new shortcuts object.
+     * Store the new shortcut group.
      */
 
     if (namespace == options.global) {
@@ -408,7 +408,7 @@
 
 
     /**
-     * Return the created shortcuts.
+     * Return the created group.
      */
 
     return self;
